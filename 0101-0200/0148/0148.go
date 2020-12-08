@@ -49,6 +49,40 @@ func sortList_insert(head *ListNode) *ListNode {
 	return dummy.Next
 }
 
+func sortList_buble(head *ListNode) *ListNode {
+	if head == nil || head.Next == nil {
+		return head
+	}
+	// 统计长度，方便记录外层循环次数
+	// 使用链表循环计数不可靠：节点交换
+	length := 0
+	for i := head; i != nil; i = i.Next {
+		length++
+	}
+	// 记录内层循环终点，就是已排好的节点
+	end := (*ListNode)(nil)
+	dummy := &ListNode{0, head}
+	for i := 0; i < length-1; i++ { // 计数
+		pre := dummy // 使用 pre 进行遍历，方便处理链表交换
+		for ; pre.Next != end && pre.Next.Next != end; pre = pre.Next {
+			if pre.Next.Val > pre.Next.Next.Val {
+				// 交换
+				next := pre.Next.Next
+				pre.Next.Next = next.Next
+				next.Next = pre.Next
+				pre.Next = next
+			}
+		}
+		// 判断那个节点是终结点
+		if pre.Next == end {
+			end = pre
+		} else {
+			end = pre.Next
+		}
+	}
+	return dummy.Next
+}
+
 func sortList_quick(head *ListNode) *ListNode {
 	if head == nil || head.Next == nil {
 		return head
@@ -70,7 +104,7 @@ func sortList_quick(head *ListNode) *ListNode {
 	return arr[0]
 }
 
-func sortList(head *ListNode) *ListNode {
+func sortList_mergeDownUp(head *ListNode) *ListNode {
 	if head == nil || head.Next == nil {
 		return head
 	}
@@ -96,7 +130,7 @@ func sortList(head *ListNode) *ListNode {
 				}
 			}
 			// 归并子段
-			pre.Next, next = merge(pre.Next, ln, rn)
+			pre.Next, next = mergeByNum(pre.Next, ln, rn)
 			pre = next
 		}
 	}
@@ -107,7 +141,7 @@ func sortList(head *ListNode) *ListNode {
 // l: 首节点
 // ln, rn： 左、右子段的长度
 // 返回值：子段的头节点和尾节点
-func merge(l *ListNode, ln, rn int) (*ListNode, *ListNode) {
+func mergeByNum(l *ListNode, ln, rn int) (*ListNode, *ListNode) {
 	// 寻找右子段的首节点
 	r := l
 	for i := ln; i > 0; r, i = r.Next, i-1 {
@@ -144,4 +178,53 @@ func merge(l *ListNode, ln, rn int) (*ListNode, *ListNode) {
 	// 和下一段连起来
 	cur.Next = next
 	return dummy.Next, cur
+}
+
+func sortList(head *ListNode) *ListNode {
+	if head == nil || head.Next == nil {
+		return head
+	}
+	// 将链表分成两部分，均分
+	// 返回的mid就是右子链的首节点
+	mid := devide(head)
+	return merge(sortList(head), sortList(mid))
+}
+
+// 切分链表
+func devide(head *ListNode) *ListNode {
+	if head.Next == nil {
+		return head
+	}
+	// 通过快慢指针法，找到中间节点
+	slow, fast := head, head
+	slowPre := slow // 记录中间节点的前一个节点
+	for fast != nil && fast.Next != nil {
+		slowPre = slow
+		slow = slow.Next
+		fast = fast.Next.Next
+	}
+	slowPre.Next = nil // NOTE 分割开链表，便于遍历
+	return slow
+}
+
+// 归并两个链表：可参考0021 题
+func merge(l, r *ListNode) *ListNode {
+	dummy := &ListNode{0, l}
+	cur := dummy
+	for ; l != nil && r != nil; cur = cur.Next {
+		if l.Val <= r.Val {
+			cur.Next = l
+			l = l.Next
+		} else {
+			cur.Next = r
+			r = r.Next
+		}
+	}
+	if l != nil {
+		cur.Next = l
+	}
+	if r != nil {
+		cur.Next = r
+	}
+	return dummy.Next
 }
