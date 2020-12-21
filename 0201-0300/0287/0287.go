@@ -13,7 +13,7 @@ func findDuplicate1(nums []int) int {
 	return 0
 }
 
-func findDuplicate(nums []int) int {
+func findDuplicate2(nums []int) int {
 	l := len(nums)
 	res := 0
 	for low, high := 0, l-1; low <= high; {
@@ -35,4 +35,20 @@ func findDuplicate(nums []int) int {
 		}
 	}
 	return res
+}
+
+func findDuplicate(nums []int) int {
+	// NOTE : slow, fast := 0, nums[nums[0]] 是错误代码
+	// slow 没有走，但 fast 走了两步
+	slow, fast := nums[0], nums[nums[0]]
+	for slow != fast {
+		slow = nums[slow]
+		fast = nums[nums[fast]]
+	}
+	slow = 0
+	for slow != fast {
+		slow = nums[slow]
+		fast = nums[fast]
+	}
+	return slow
 }
