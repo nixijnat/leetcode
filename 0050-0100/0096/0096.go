@@ -50,7 +50,7 @@ func numTrees(n int) int {
 		// 对称性加速计算
 		half := i >> 1
 		for j := 0; j < half; j++ {
-			buf[i] += buf[i-1-j] * buf[j] * 2
+			buf[i] += buf[i-1-j] * buf[j] << 1
 		}
 		// 奇数情况下，需要将中间数的结果附加上
 		if i&0x1 != 0 {
