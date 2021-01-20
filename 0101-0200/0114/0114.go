@@ -31,7 +31,7 @@ func flattenHelper(root *TreeNode) *TreeNode {
 }
 
 // 深度展开版本
-func flatten(root *TreeNode) {
+func flatten_2(root *TreeNode) {
 	stack := make([]*TreeNode, 0, 8)
 	var tail *TreeNode // 记录左子树展开后的尾节点
 	for root != nil || len(stack) > 0 {
@@ -56,5 +56,48 @@ func flatten(root *TreeNode) {
 		if root != nil {
 			tail = nil
 		}
+	}
+}
+
+// 前序遍历版本
+func flatten(root *TreeNode) {
+	if root == nil {
+		return
+	}
+	stack := make([]*TreeNode, 0, 8)
+	stack = append(stack, root)
+	// 存储前一个节点
+	var prev *TreeNode
+	for len(stack) > 0 {
+		cur := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		if prev != nil {
+			// 当前节点为前一个结点右儿子
+			prev.Left, prev.Right = nil, cur
+		}
+		// 前序遍历：右儿子
+		if cur.Right != nil {
+			stack = append(stack, cur.Right)
+		}
+		if cur.Left != nil {
+			stack = append(stack, cur.Left)
+		}
+		prev = cur
+	}
+}
+func flatten_4(root *TreeNode) {
+	for root != nil {
+		// 存在左儿子，则把当前节点的右儿子
+		// 变成 左子树最右节点的右儿子
+		if root.Left != nil {
+			prev := root.Left
+			for ; prev.Right != nil; prev = prev.Right {
+			}
+			prev.Right = root.Right
+			root.Right = root.Left
+			root.Left = nil
+		}
+		// 下一个根节点
+		root = root.Right
 	}
 }
