@@ -1,37 +1,64 @@
 package main
 
-import "sort"
-
 func coinChange(coins []int, amount int) int {
 	if amount == 0 {
 		return 0
 	}
-	min := func(a, b int) int {
-		if a > b {
-			return b
-		}
-		return a
+	// 将结果存储
+	buf := make([]int, amount+1)
+	return helper(coins, buf, amount)
+}
+
+func helper(coins, buf []int, amount int) int {
+	if amount == 0 {
+		return 0
 	}
-	sort.Slice(coins, func(i, j int) bool { return coins[i] > coins[j] })
-	var find func(coins []int, amount int, count, res int) int
-	find = func(coins []int, amount int, count, res int) int {
-		if amount == 0 {
-			return min(count, res)
+	// 已有结果
+	if buf[amount] != 0 {
+		return buf[amount]
+	}
+	// res 为一个较大的数
+	// 但是不能为 amount，怕 amount 个 1
+	res := amount + 1
+	for _, v := range coins {
+		if amount < v {
+			continue
 		}
-		ok := false
-		for i, v := range coins {
-			if amount >= v && count < res {
-				l := find(coins[i:], amount-v, count+1, res)
-				if l != -1 {
-					ok = true
-					res = min(l, res)
-				}
+		// 子问题
+		tmp := helper(coins, buf, amount-v)
+		if tmp != -1 && tmp < res {
+			res = tmp
+		}
+	}
+	if res == amount+1 {
+		res = -1
+	} else {
+		res++
+	}
+	buf[amount] = res
+	return res
+}
+
+func coinChange_2(coins []int, amount int) int {
+	buf := make([]int, amount+1)
+	// 从 1 开始 构造
+	for i := 1; i <= amount; i++ {
+		buf[i] = i + 1 // 预设一个较大的数
+		for _, v := range coins {
+			if i-v < 0 {
+				continue
+			}
+			if buf[i-v] != -1 && buf[i-v] < buf[i] {
+				buf[i] = buf[i-v]
 			}
 		}
-		if !ok {
-			return -1
+		// 预设的数没变 说明不存在构造的方式
+		if buf[i] == i+1 {
+			buf[i] = -1
+		} else {
+			buf[i]++
 		}
-		return res
 	}
-	return find(coins, amount, 0, amount)
+	// 构造的最终结果
+	return buf[amount]
 }
