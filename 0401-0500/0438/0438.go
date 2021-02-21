@@ -101,3 +101,34 @@ func findAnagrams(s, p string) []int {
 	}
 	return res
 }
+
+// 一般想法：将窗口维持再 p 大小
+func findAnagrams_normal2(s, p string) []int {
+	if s == "" || len(s) < len(p) {
+		return nil
+	}
+	// 初始化目标频次和当前频次
+	// 将窗口维持在目标窗口大小
+	var freq [26]int
+	var counts [26]int
+	for i := range p {
+		freq[p[i]-'a']++
+		counts[s[i]-'a']++
+	}
+	res := make([]int, 0, 8)
+	if freq == counts {
+		res = append(res, 0)
+	}
+	// 滑动窗口
+	l, r := 0, len(p)
+	for r < len(s) {
+		counts[s[r]-'a']++
+		counts[s[l]-'a']--
+		r++
+		l++
+		if freq == counts {
+			res = append(res, l)
+		}
+	}
+	return res
+}

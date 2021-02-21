@@ -16,6 +16,7 @@ func TestFunc(t *testing.T) {
 		{"tmmzuxt", 5},
 		{"cdd", 2},
 	} {
-		t.Log(c.input, lengthOfLongestSubstring(c.input), c.expect)
+		v := lengthOfLongestSubstring(c.input)
+		t.Log(c, v, v == c.expect)
 	}
 }

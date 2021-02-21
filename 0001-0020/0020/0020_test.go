@@ -7,8 +7,13 @@ func TestFunc(t *testing.T) {
 		input  string
 		expect bool
 	}{
-		{"", false},
+		{"{[]}", true},
+		{"([)]", false},
+		{"(]", false},
+		{"()[]{}", true},
+		{"()", true},
 	} {
-		t.Log(c, isValid(c.input))
+		v := isValid(c.input)
+		t.Log(c, v, v == c.expect)
 	}
 }

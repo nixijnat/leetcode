@@ -82,3 +82,32 @@ func decodeString(s string) string {
 	}
 	return cur.String()
 }
+
+// 优秀的方法
+func decodeString_good(s string) string {
+	stk := make([]byte, 0, 8)
+	for i := range s {
+		// 将 非 ] 全部放入 栈
+		if s[i] != ']' {
+			stk = append(stk, s[i])
+			continue
+		}
+		// 遇到 ] 后，向前找 [ 以获取重复的部分
+		leftIndex := bytes.LastIndex(stk, []byte{'['})
+		repeatBytes := stk[leftIndex+1:]
+		// 继续往 [ 前面找重复次数
+		numIndex := leftIndex - 1
+		for ; numIndex >= 0; numIndex-- {
+			if stk[numIndex] < '0' || stk[numIndex] > '9' {
+				break
+			}
+		}
+		numIndex++
+		// 将栈先截断
+		stk = stk[:numIndex]
+		count, _ := strconv.Atoi(string(stk[numIndex:leftIndex]))
+		// 再将重复的部分放入栈
+		stk = append(stk, bytes.Repeat(repeatBytes, count)...)
+	}
+	return string(stk)
+}

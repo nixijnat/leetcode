@@ -99,3 +99,56 @@ func minWindow(s, t string) string {
 	}
 	return ret
 }
+func minWindow_new(s, t string) string {
+	if s == "" || len(s) < len(t) {
+		return ""
+	}
+	// 统计字符频次
+	var freq [128]int
+	for i := range t {
+		freq[t[i]]++
+	}
+	// 记录未匹配的字符数
+	var unmatchCnt = len(t)
+	var count [128]int
+	var res string
+	for l, r := 0, 0; r < len(s); r++ {
+		// 右指针扩张寻找目标字串
+		val := s[r]
+		// 忽略无关字符
+		if freq[val] == 0 {
+			continue
+		}
+		// 更新未匹配次数
+		if count[val] < freq[val] {
+			unmatchCnt--
+		}
+		count[val]++ // 记录实际字符频次
+		if unmatchCnt != 0 {
+			continue
+		}
+		// 左指针收缩，直到不满足要求
+		// 注意：佐治
+		for ; ; l++ {
+			// 更新结果
+			if res == "" || len(res) > len(s[l:r+1]) {
+				res = s[l : r+1]
+			}
+			val := s[l]
+			// 忽略无关字符
+			if freq[val] == 0 {
+				continue
+			}
+			count[val]--
+			// 频次不满足要求，则退出
+			if count[val] < freq[val] {
+				unmatchCnt++
+				// 注意，退出前将左指针指向 相关字符
+				for l++; l < r && freq[s[l]] == 0; l++ {
+				}
+				break
+			}
+		}
+	}
+	return res
+}
