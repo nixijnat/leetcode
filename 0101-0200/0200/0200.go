@@ -49,6 +49,59 @@ func numIslands_breath(grid [][]byte) int {
 	return res
 }
 
+type disjointSet struct {
+	parent []int
+	rank   []int
+	count  int // 记录岛屿数量
+}
+
+func newSet(nums [][]byte) *disjointSet {
+	s := &disjointSet{
+		parent: make([]int, len(nums)*len(nums[0])),
+		rank:   make([]int, len(nums)*len(nums[0])),
+	}
+	flag := 0
+	for i := range nums {
+		for j := range nums[i] {
+			if nums[i][j] == '0' {
+				s.parent[flag] = -1
+			} else {
+				s.parent[flag] = flag
+				s.count++
+			}
+			s.rank[flag] = 1
+			flag++
+		}
+	}
+	return s
+}
+
+func (s *disjointSet) find(i int) int {
+	if s.parent[i] != i {
+		// 路径压缩
+		s.parent[i] = s.find(s.parent[i])
+	}
+	return s.parent[i]
+}
+
+func (s *disjointSet) union(i, j int) {
+	p1 := s.find(i)
+	p2 := s.find(j)
+	if p1 == p2 {
+		return
+	}
+	// rank 小的靠向 rank 高的
+	if s.rank[p1] < s.rank[p2] {
+		p1, p2 = p2, p1
+	}
+	s.parent[p2] = p1
+	// rank 一样，将被靠的秩加一
+	if s.rank[p1] == s.rank[p2] {
+		s.rank[p1]++
+	}
+	s.count-- // 岛屿减少一个
+}
+
 func numIslands(grid [][]byte) int {
 	m := len(grid)
 	if m == 0 {
@@ -58,78 +111,27 @@ func numIslands(grid [][]byte) int {
 	if n == 0 {
 		return 0
 	}
-	set := newSet(grid)
-	for i := 0; i < m; i++ {
-		for j := 0; j < n; j++ {
-			if grid[i][j] != '1' {
+	s := newSet(grid)
+	for i := range grid {
+		for j, v := range grid[i] {
+			if v == '0' {
 				continue
 			}
-			grid[i][j] = 'v' // 标记已经走过，避免重复的合并判断
-			i1 := i*n + j
-			if i > 0 && grid[i-1][j] == '1' {
-				set.union(i1, (i-1)*n+j)
+			grid[i][j] = '0' // 避免后续重复判断
+			index := i*n + j
+			if i-1 >= 0 && grid[i-1][j] == '1' {
+				s.union(index, index-n)
 			}
-			if i < m-1 && grid[i+1][j] == '1' {
-				set.union(i1, (i+1)*n+j)
+			if i+1 < m && grid[i+1][j] == '1' {
+				s.union(index, index+n)
 			}
-			if j > 0 && grid[i][j-1] == '1' {
-				set.union(i1, i*n+j-1)
+			if j-1 >= 0 && grid[i][j-1] == '1' {
+				s.union(index, index-1)
 			}
-			if j < n-1 && grid[i][j+1] == '1' {
-				set.union(i1, i*n+j+1)
+			if j+1 < n && grid[i][j+1] == '1' {
+				s.union(index, index+1)
 			}
 		}
 	}
-	return set.count
-}
-
-type disjoinSet struct {
-	parents []int
-	count   int // 计数，以免后续统计根节点
-}
-
-func newSet(grid [][]byte) *disjoinSet {
-	m, n := len(grid), len(grid[0])
-	set := &disjoinSet{
-		parents: make([]int, 0, m*n),
-	}
-	flag := 0
-	// 初始化
-	// 合法点的父节点标记为自己
-	for i := 0; i < m; i++ {
-		for j := 0; j < n; j++ {
-			if grid[i][j] == '1' {
-				set.parents = append(set.parents, flag)
-				set.count++
-			} else {
-				set.parents = append(set.parents, -1)
-			}
-			flag++
-		}
-	}
-	return set
-}
-
-func (d *disjoinSet) find(i int) int {
-	if i != d.parents[i] { // 查询根节点的过程中就 压缩路径
-		d.parents[i] = d.find(d.parents[i])
-	}
-	return d.parents[i]
-}
-
-func (d *disjoinSet) union(v1, v2 int) {
-	i1 := d.find(v1)
-	i2 := d.find(v2)
-	if i1 == i2 { // 同一颗树就不合并
-		return
-	}
-	d.parents[i2] = i1 // 合并并查集
-	/*  这里没必要压缩路径，造成时间复杂度极高
-	for i := range d.parents {
-		if d.parents[i] == i2 {
-			d.parents[i] = i1
-		}
-	}
-	*/
-	d.count-- // 消失一个岛
+	return s.count
 }

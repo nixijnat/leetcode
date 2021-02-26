@@ -28,17 +28,18 @@ func findTargetSumWays(nums []int, S int) int {
 	if S > sum || -S > sum {
 		return 0
 	}
-	buf := make([]int, 2*sum+1)
-	buf[nums[0]+sum] = 1
-	buf[-nums[0]+sum] += 1 // 必须是 +=， nums[0]==0时，0为2
+	max := 2 * sum
+	buf := make([]int, max+1)
+	buf[sum+nums[0]] = 1
+	buf[sum-nums[0]] += 1 // 必须是 +=， nums[0]==0时，0为2
 	for i := 1; i < len(nums); i++ {
 		tmp := make([]int, 2*sum+1)
-		for j := -sum; j <= sum; j++ {
-			// buf 为0，表示之前不存在这种情况
-			// 也避免判断 j+sum-nums[i] 和 j+sum-nums[i] 是否在合法范围
-			if buf[j+sum] > 0 {
-				tmp[j+sum-nums[i]] += buf[j+sum]
-				tmp[j+sum+nums[i]] += buf[j+sum]
+		for j := 0; j <= max; j++ {
+			// buf[j] 为0，表示之前不存在这种情况
+			// 也避免判断 j-nums[i] 和 j+nums[i] 是否在合法范围
+			if buf[j] > 0 {
+				tmp[j-nums[i]] += buf[j]
+				tmp[j+nums[i]] += buf[j]
 			}
 		}
 		buf = tmp
